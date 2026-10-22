@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Diwali Glow ✨ — A Little Festival of Magic</title>
+  <meta name="description" content="A tiny interactive Diwali greeting: fireworks, glowing diyas and a personalised wish you can send to a friend.">
+  <meta name="theme-color" content="#0d0627">
+  <meta property="og:title" content="DIWALI GLOW ✨ — A Little Festival of Magic">
+  <meta property="og:description" content="Open your Diwali surprise: fireworks, diyas and a wish made just for you.">
+  <meta property="og:type" content="website">
+  <!-- Emoji favicon: no image file needed, works offline -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🪔%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="is-welcome">
+
+  <a class="skip-link" href="#wishes">Skip to the wish creator</a>
+
+  <!-- Shared SVG gradients & patterns (zero-size, used by the illustrations below and by script.js) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="gGold" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#fff0a8"/><stop offset=".5" stop-color="#ffc83d"/><stop offset="1" stop-color="#e28a00"/>
+      </linearGradient>
+      <linearGradient id="gFlame" x1="0" y1="1" x2="0" y2="0">
+        <stop offset="0" stop-color="#ff7b00"/><stop offset=".55" stop-color="#ffc400"/><stop offset="1" stop-color="#fff6c2"/>
+      </linearGradient>
+      <linearGradient id="gBowl" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#ffb347"/><stop offset=".55" stop-color="#e8631a"/><stop offset="1" stop-color="#9c2b1a"/>
+      </linearGradient>
+      <linearGradient id="gLantern" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#ff5db1"/><stop offset="1" stop-color="#ff8a1f"/>
+      </linearGradient>
+      <linearGradient id="gGround" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#4a1c8c"/><stop offset="1" stop-color="#1a0b3c"/>
+      </linearGradient>
+      <radialGradient id="gGlow">
+        <stop offset="0" stop-color="#ffd166" stop-opacity=".85"/><stop offset="1" stop-color="#ffd166" stop-opacity="0"/>
+      </radialGradient>
+      <!-- Tile of four lit windows used on the buildings -->
+      <pattern id="pWin" width="68" height="92" patternUnits="userSpaceOnUse">
+        <rect x="10" y="12" width="18" height="26" rx="4" fill="#ffcf5a"/>
+        <rect x="40" y="12" width="18" height="26" rx="4" fill="#6a45e0" opacity=".6"/>
+        <rect x="10" y="58" width="18" height="26" rx="4" fill="#ff7ab6" opacity=".9"/>
+        <rect x="40" y="58" width="18" height="26" rx="4" fill="#ffcf5a"/>
+      </pattern>
+    </defs>
+  </svg>
+
+  <!-- Background layers -->
+  <div class="sky" aria-hidden="true"><div class="moon"></div><div id="stars"></div></div>
+  <canvas id="fireworks" aria-hidden="true"></canvas>
+  <div id="sparkles" class="sparkles" aria-hidden="true"></div>
+
+  <noscript><p class="noscript">Please turn on JavaScript to open your Diwali surprise ✨</p></noscript>
+
+  <!-- Music toggle (OFF by default; audio only starts after you press it) -->
+  <button id="musicToggle" class="music-toggle" type="button" aria-pressed="false" aria-label="Festive music">
+    <span class="music-icon" aria-hidden="true">♪</span>
+    <span class="music-label" id="musicLabel">Music off</span>
+  </button>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <!-- ============ A. WELCOME SCREEN ============ -->
+  <section id="welcome" class="welcome" aria-labelledby="welcome-title">
+    <div class="lantern" style="--x:5%;--len:46px;--d:0s" aria-hidden="true"><i></i></div>
+    <div class="lantern" style="--x:20%;--len:96px;--d:-1.3s" aria-hidden="true"><i></i></div>
+    <div class="lantern" style="--x:76%;--len:70px;--d:-2.2s" aria-hidden="true"><i></i></div>
+    <div class="lantern" style="--x:90%;--len:120px;--d:-.7s" aria-hidden="true"><i></i></div>
+
+    <div class="welcome-inner">
+      <div class="welcome-diya" aria-hidden="true">
+        <span class="diya-glow"></span>
+        <span class="diya-art" data-diya></span>
+      </div>
+      <p class="eyebrow">DIWALI GLOW ✨</p>
+      <h1 id="welcome-title" class="gradient-text">Something magical is glowing tonight…</h1>
+      <p class="welcome-sub">A little festival of magic is waiting, just for you.</p>
+      <button id="openBtn" class="btn btn-glow btn-big" type="button">OPEN YOUR DIWALI SURPRISE ✨</button>
+      <p class="hint">Tip: tap anywhere on the screen for fireworks</p>
+    </div>
+  </section>
+
+  <!-- ============ B. MAIN CELEBRATION ============ -->
+  <main id="main" class="main" hidden tabindex="-1">
+
+    <header class="hero container">
+      <p class="eyebrow reveal">DIWALI GLOW ✨ · A Little Festival of Magic</p>
+      <h1 class="headline gradient-text reveal" style="--delay:.1s">HAPPY DIWALI <span class="emoji" aria-hidden="true">🪔</span></h1>
+      <p class="greeting reveal" style="--delay:.2s">May your life sparkle with happiness, your dreams glow brighter, and your world overflow with love, laughter, and light.</p>
+    </header>
+
+    <!-- Illustrated scene: friends, sweets, gifts, balconies, lanterns, rangoli -->
+    <section class="container scene-section reveal" style="--delay:.15s" aria-label="Diwali celebration illustration">
+      <div class="garland" aria-hidden="true"></div>
+      <div class="scene-frame">
+        <svg class="scene" viewBox="0 0 960 540" xmlns="http://www.w3.org/2000/svg" role="img"
+             aria-label="Illustration: four cheerful friends in festive clothes greet each other with folded hands beside a thali of sweets with a lit diya, gift boxes and a rangoli, in front of glowing balconies hung with lanterns and marigold garlands.">
+          <defs>
+            <!-- Shared cute face -->
+            <g id="face">
+              <ellipse cx="48" cy="56" rx="3.4" ry="4.4" fill="#2a1233"/>
+              <ellipse cx="72" cy="56" rx="3.4" ry="4.4" fill="#2a1233"/>
+              <circle cx="49.2" cy="54.4" r="1.3" fill="#fff"/>
+              <circle cx="73.2" cy="54.4" r="1.3" fill="#fff"/>
+              <ellipse cx="40" cy="67" rx="6" ry="3.6" fill="#ff7aa8" opacity=".55"/>
+              <ellipse cx="80" cy="67" rx="6" ry="3.6" fill="#ff7aa8" opacity=".55"/>
+              <path d="M52 66Q60 75 68 66" fill="none" stroke="#7a2236" stroke-width="2.4" stroke-linecap="round"/>
+            </g>
+            <!-- Folded hands (namaste) -->
+            <g id="namaste">
+              <path class="s-skin" d="M42 100Q32 120 55 124" fill="none" stroke-width="9" stroke-linecap="round"/>
+              <path class="s-skin" d="M78 100Q88 120 65 124" fill="none" stroke-width="9" stroke-linecap="round"/>
+              <path class="c-skin" d="M60 104C69 112 69 124 60 133C51 124 51 112 60 104Z"/>
+              <path d="M60 108L60 128" stroke="rgba(0,0,0,.14)" stroke-width="1.5"/>
+            </g>
+            <!-- Friend with long hair and lehenga-style outfit -->
+            <g id="girl">
+              <path class="c-hair" d="M26 56C22 14 48 5 62 5c16 0 40 10 34 52l5 62c-12 10-70 10-82 0z"/>
+              <path class="c-skirt" d="M34 126L86 126L110 205L10 205Z"/>
+              <path d="M12 192L108 192L110 205L10 205Z" fill="url(#gGold)"/>
+              <path d="M44 150q16 12 32 0" fill="none" stroke="url(#gGold)" stroke-width="3"/>
+              <rect class="c-top" x="36" y="88" width="48" height="46" rx="16"/>
+              <path class="c-dup" d="M38 94Q74 104 90 144L100 136Q86 98 62 88Z"/>
+              <rect class="c-skin" x="52" y="76" width="16" height="16" rx="6"/>
+              <use href="#namaste"/>
+              <path class="s-top" d="M42 100Q36 108 37 114" fill="none" stroke-width="12" stroke-linecap="round"/>
+              <path class="s-top" d="M78 100Q84 108 83 114" fill="none" stroke-width="12" stroke-linecap="round"/>
+              <circle class="c-skin" cx="60" cy="52" r="30"/>
+              <path class="c-hair" d="M30 50Q30 17 60 17Q90 17 90 50Q76 32 60 36Q44 32 30 50Z"/>
+              <use href="#face"/>
+              <circle cx="60" cy="43" r="2.4" fill="#e8174b"/>
+              <circle cx="30" cy="68" r="3" fill="url(#gGold)"/><circle cx="90" cy="68" r="3" fill="url(#gGold)"/>
+              <circle cx="86" cy="26" r="7" fill="#ff9f1c"/><circle cx="86" cy="26" r="3" fill="#ffd166"/>
+            </g>
+            <!-- Friend in kurta and pyjama -->
+            <g id="boy">
+              <path class="c-pants" d="M40 140L58 140L56 204L36 204Z"/>
+              <path class="c-pants" d="M62 140L80 140L84 204L64 204Z"/>
+              <ellipse cx="45" cy="206" rx="13" ry="5" fill="#2a1233"/>
+              <ellipse cx="75" cy="206" rx="13" ry="5" fill="#2a1233"/>
+              <path class="c-top" d="M34 90Q60 82 86 90L98 162L22 162Z"/>
+              <path d="M52 86L60 114L68 86Z" fill="url(#gGold)"/>
+              <circle cx="60" cy="124" r="2.2" fill="url(#gGold)"/><circle cx="60" cy="138" r="2.2" fill="url(#gGold)"/>
+              <path d="M22 156L98 156L98 162L22 162Z" fill="url(#gGold)" opacity=".85"/>
+              <rect class="c-skin" x="52" y="76" width="16" height="16" rx="6"/>
+              <use href="#namaste"/>
+              <path class="s-top" d="M42 100Q35 108 37 116" fill="none" stroke-width="13" stroke-linecap="round"/>
+              <path class="s-top" d="M78 100Q85 108 83 116" fill="none" stroke-width="13" stroke-linecap="round"/>
+              <circle class="c-skin" cx="60" cy="52" r="30"/>
+              <path class="c-hair" d="M29 52Q26 14 60 14Q94 14 91 52Q82 30 60 33Q38 30 29 52Z"/>
+              <use href="#face"/>
+              <path d="M60 36L60 44" stroke="#ff4d2e" stroke-width="3" stroke-linecap="round"/>
+            </g>
+            <!-- Rangoli: flower-like pattern, flattened later to look like it lies on the floor -->
+            <g id="rangoli">
+              <circle r="94" fill="none" stroke="#ffd166" stroke-width="5" stroke-dasharray="0 12" stroke-linecap="round"/>
+              <g fill="#ff3fa4" opacity=".9">
+                <ellipse cy="-62" rx="15" ry="32"/><ellipse cy="-62" rx="15" ry="32" transform="rotate(45)"/>
+                <ellipse cy="-62" rx="15" ry="32" transform="rotate(90)"/><ellipse cy="-62" rx="15" ry="32" transform="rotate(135)"/>
+                <ellipse cy="-62" rx="15" ry="32" transform="rotate(180)"/><ellipse cy="-62" rx="15" ry="32" transform="rotate(225)"/>
+                <ellipse cy="-62" rx="15" ry="32" transform="rotate(270)"/><ellipse cy="-62" rx="15" ry="32" transform="rotate(315)"/>
+              </g>
+              <g fill="#ffb703" opacity=".95">
+                <ellipse cy="-46" rx="8" ry="20" transform="rotate(22.5)"/><ellipse cy="-46" rx="8" ry="20" transform="rotate(67.5)"/>
+                <ellipse cy="-46" rx="8" ry="20" transform="rotate(112.5)"/><ellipse cy="-46" rx="8" ry="20" transform="rotate(157.5)"/>
+                <ellipse cy="-46" rx="8" ry="20" transform="rotate(202.5)"/><ellipse cy="-46" rx="8" ry="20" transform="rotate(247.5)"/>
+                <ellipse cy="-46" rx="8" ry="20" transform="rotate(292.5)"/><ellipse cy="-46" rx="8" ry="20" transform="rotate(337.5)"/>
+              </g>
+              <circle r="26" fill="#7b2ff7"/>
+              <circle r="18" fill="none" stroke="#ffd166" stroke-width="3" stroke-dasharray="0 7" stroke-linecap="round"/>
+              <circle r="9" fill="url(#gGold)"/>
+            </g>
+          </defs>
+
+          <!-- Buildings with glowing windows -->
+          <g>
+            <rect x="0" y="170" width="200" height="310" fill="#1c1048"/>
+            <rect x="200" y="120" width="250" height="360" fill="#241660"/>
+            <rect x="450" y="180" width="190" height="300" fill="#1a0f44"/>
+            <rect x="640" y="110" width="180" height="370" fill="#26186a"/>
+            <rect x="820" y="165" width="140" height="315" fill="#1d1150"/>
+            <g transform="translate(14 194)" class="win"><rect width="136" height="184" fill="url(#pWin)"/></g>
+            <g transform="translate(214 144)" class="win win-b"><rect width="204" height="276" fill="url(#pWin)"/></g>
+            <g transform="translate(464 204)" class="win"><rect width="136" height="184" fill="url(#pWin)"/></g>
+            <g transform="translate(654 134)" class="win win-b"><rect width="136" height="276" fill="url(#pWin)"/></g>
+            <g transform="translate(834 189)" class="win"><rect width="68" height="184" fill="url(#pWin)"/></g>
+          </g>
+          <!-- Balconies -->
+          <g>
+            <rect x="206" y="430" width="238" height="9" rx="3" fill="#4a2fb5"/>
+            <rect x="210" y="406" width="230" height="4" fill="#7a56f0"/>
+            <line x1="214" x2="436" y1="419" y2="419" stroke="#7a56f0" stroke-width="22" stroke-dasharray="3 12" opacity=".65"/>
+            <rect x="646" y="430" width="168" height="9" rx="3" fill="#4a2fb5"/>
+            <rect x="650" y="406" width="160" height="4" fill="#7a56f0"/>
+            <line x1="654" x2="806" y1="419" y2="419" stroke="#7a56f0" stroke-width="22" stroke-dasharray="3 12" opacity=".65"/>
+            <rect x="0" y="400" width="190" height="9" rx="3" fill="#4a2fb5"/>
+            <rect x="4" y="376" width="182" height="4" fill="#7a56f0"/>
+            <line x1="8" x2="182" y1="389" y2="389" stroke="#7a56f0" stroke-width="22" stroke-dasharray="3 12" opacity=".65"/>
+          </g>
+          <!-- Marigold garland (dotted line) and fairy lights -->
+          <path d="M-10 128Q120 190 250 140T480 150T700 130T970 150" fill="none" stroke="#ff9f1c" stroke-width="10" stroke-dasharray="0 15" stroke-linecap="round"/>
+          <path d="M-10 128Q120 190 250 140T480 150T700 130T970 150" fill="none" stroke="#ffd166" stroke-width="4" stroke-dasharray="0 15" stroke-dashoffset="-7" stroke-linecap="round"/>
+          <path d="M0 215Q240 270 480 225T960 215" fill="none" stroke="#fff3b0" stroke-width="5" stroke-dasharray="0 24" stroke-linecap="round" class="fairy"/>
+
+          <!-- Hanging lanterns -->
+          <g transform="translate(70 150)"><g class="sway"><line y2="24" stroke="#ffd166" stroke-width="2"/><rect x="-14" y="24" width="28" height="38" rx="10" fill="url(#gLantern)"/><path d="M-5 26V60M5 26V60" stroke="rgba(255,255,255,.35)" stroke-width="2"/><path d="M0 62v14" stroke="#ffd166" stroke-width="2"/></g></g>
+          <g transform="translate(330 150)"><g class="sway" style="--dly:-1.4s"><line y2="40" stroke="#ffd166" stroke-width="2"/><rect x="-14" y="40" width="28" height="38" rx="10" fill="url(#gLantern)"/><path d="M-5 42V76M5 42V76" stroke="rgba(255,255,255,.35)" stroke-width="2"/><path d="M0 78v14" stroke="#ffd166" stroke-width="2"/></g></g>
+          <g transform="translate(560 160)"><g class="sway" style="--dly:-.6s"><line y2="26" stroke="#ffd166" stroke-width="2"/><rect x="-14" y="26" width="28" height="38" rx="10" fill="url(#gLantern)"/><path d="M-5 28V62M5 28V62" stroke="rgba(255,255,255,.35)" stroke-width="2"/><path d="M0 64v14" stroke="#ffd166" stroke-width="2"/></g></g>
+          <g transform="translate(760 140)"><g class="sway" style="--dly:-2.1s"><line y2="44" stroke="#ffd166" stroke-width="2"/><rect x="-14" y="44" width="28" height="38" rx="10" fill="url(#gLantern)"/><path d="M-5 46V80M5 46V80" stroke="rgba(255,255,255,.35)" stroke-width="2"/><path d="M0 82v14" stroke="#ffd166" stroke-width="2"/></g></g>
+          <g transform="translate(900 160)"><g class="sway" style="--dly:-.9s"><line y2="28" stroke="#ffd166" stroke-width="2"/><rect x="-14" y="28" width="28" height="38" rx="10" fill="url(#gLantern)"/><path d="M-5 30V64M5 30V64" stroke="rgba(255,255,255,.35)" stroke-width="2"/><path d="M0 66v14" stroke="#ffd166" stroke-width="2"/></g></g>
+
+          <!-- Ground & rangoli -->
+          <path d="M0 470Q480 438 960 470L960 540L0 540Z" fill="url(#gGround)"/>
+          <path d="M0 470Q480 438 960 470" fill="none" stroke="#9d4dff" stroke-width="2" opacity=".6"/>
+          <g transform="translate(497 503) scale(1.9 .36)" class="rangoli"><use href="#rangoli"/></g>
+          <circle cx="520" cy="478" r="120" fill="url(#gGlow)" opacity=".5" class="pulse"/>
+
+          <!-- Gifts -->
+          <g transform="translate(384 506)">
+            <ellipse cx="18" cy="2" rx="30" ry="5" fill="#000" opacity=".3"/>
+            <rect x="0" y="-34" width="36" height="34" rx="5" fill="#7b2ff7"/>
+            <rect x="15" y="-34" width="6" height="34" fill="url(#gGold)"/>
+            <rect x="0" y="-20" width="36" height="6" fill="url(#gGold)"/>
+            <path d="M18 -34q-14 -16 -16 -4q6 6 16 4zM18 -34q14 -16 16 -4q-6 6 -16 4z" fill="url(#gGold)"/>
+          </g>
+          <g transform="translate(424 506)">
+            <rect x="0" y="-24" width="26" height="24" rx="4" fill="#ff3fa4"/>
+            <rect x="10" y="-24" width="6" height="24" fill="url(#gGold)"/>
+            <path d="M13 -24q-10 -12 -12 -3q4 5 12 3zM13 -24q10 -12 12 -3q-4 5 -12 3z" fill="url(#gGold)"/>
+          </g>
+
+          <!-- Thali of sweets with a diya -->
+          <g transform="translate(520 502)">
+            <ellipse cy="15" rx="66" ry="9" fill="#000" opacity=".35"/>
+            <ellipse rx="64" ry="15" fill="url(#gGold)"/>
+            <ellipse cy="-1" rx="52" ry="10.5" fill="#ffe9a8" opacity=".55"/>
+            <g fill="#ff9a2e"><circle cx="-34" cy="-7" r="8"/><circle cx="-16" cy="-10" r="8"/><circle cx="2" cy="-7" r="8"/></g>
+            <g fill="#ffe0a0"><circle cx="-37" cy="-9" r="1.3"/><circle cx="-31" cy="-5" r="1.3"/><circle cx="-19" cy="-12" r="1.3"/><circle cx="-13" cy="-8" r="1.3"/><circle cx="0" cy="-9" r="1.3"/><circle cx="5" cy="-5" r="1.3"/></g>
+            <rect x="14" y="-9" width="13" height="13" rx="2" transform="rotate(25 20 -2)" fill="#fff3d6"/>
+            <circle cx="20" cy="-2" r="2" fill="#ffb703"/>
+            <circle cx="42" cy="-26" r="30" fill="url(#gGlow)" opacity=".7" class="pulse"/>
+            <g transform="translate(42 -4)">
+              <path d="M-13 0Q0 -5 13 0Q11 12 0 13Q-11 12 -13 0Z" fill="url(#gBowl)"/>
+              <path class="flame" d="M0 -24C8 -13 9 -7 0 -1C-9 -7 -8 -13 0 -24Z" fill="url(#gFlame)"/>
+            </g>
+          </g>
+
+          <!-- The four friends -->
+          <g class="friend" style="--dly:0s"><use href="#girl" transform="translate(50 259) scale(1.2)" style="--skin:#f5c6a0;--hair:#2b1236;--top:#ff4fa3;--skirt:#7b2ff7;--dup:#ffb703"/></g>
+          <g class="friend" style="--dly:-.8s"><use href="#boy" transform="translate(225 259) scale(1.2)" style="--skin:#e0a97c;--hair:#1c0f2e;--top:#ff8a1f;--pants:#f4ecff"/></g>
+          <g class="friend" style="--dly:-1.6s"><use href="#girl" transform="translate(625 259) scale(1.2)" style="--skin:#c98f62;--hair:#1f1030;--top:#ffd166;--skirt:#e5195f;--dup:#7b2ff7"/></g>
+          <g class="friend" style="--dly:-2.2s"><use href="#boy" transform="translate(800 259) scale(1.2)" style="--skin:#f0b98d;--hair:#2a1233;--top:#7b2ff7;--pants:#ffe8c2"/></g>
+
+          <!-- Greeting bubbles -->
+          <g class="bubble" style="--dly:0s">
+            <rect x="44" y="200" width="156" height="42" rx="21" fill="#fff7ea"/>
+            <path d="M112 241l10 16l10 -16z" fill="#fff7ea"/>
+            <text x="122" y="227" text-anchor="middle" font-size="19" font-weight="800" fill="#4a1d96" font-family="Trebuchet MS, Segoe UI, sans-serif">Happy Diwali!</text>
+          </g>
+          <g class="bubble" style="--dly:-1.5s">
+            <rect x="787" y="206" width="170" height="42" rx="21" fill="#fff7ea"/>
+            <path d="M862 247l10 16l10 -16z" fill="#fff7ea"/>
+            <text x="872" y="233" text-anchor="middle" font-size="16" font-weight="800" fill="#4a1d96" font-family="Trebuchet MS, Segoe UI, sans-serif">Shubh Deepavali!</text>
+          </g>
+          <text class="bubble" style="--dly:-.7s" x="297" y="248" text-anchor="middle" font-size="30">🙏</text>
+          <text class="bubble" style="--dly:-2.3s" x="697" y="248" text-anchor="middle" font-size="30">🙏</text>
+
+          <!-- Twinkles -->
+          <g fill="#ffd166" font-size="22" font-family="sans-serif">
+            <text class="twk" style="--dly:0s" x="260" y="330">✦</text>
+            <text class="twk" style="--dly:-1s" x="560" y="300">✦</text>
+            <text class="twk" style="--dly:-2s" x="600" y="410">✧</text>
+            <text class="twk" style="--dly:-.5s" x="465" y="380">✦</text>
+            <text class="twk" style="--dly:-1.7s" x="360" y="440">✧</text>
+          </g>
+        </svg>
+      </div>
+      <p class="cute-note reveal">A little light, a little love, and a whole lot of magic. ✨</p>
+      <p class="hint center">Tap or click anywhere for extra fireworks 🎆</p>
+    </section>
+
+    <!-- ============ D. GLOWING DIYAS ============ -->
+    <section id="diyas" class="section container" aria-labelledby="diya-title">
+      <h2 id="diya-title" class="section-title reveal">Light a Diya 🪔</h2>
+      <p class="section-sub reveal">Tap a diya to light it or let it rest. Every little flame carries a wish.</p>
+      <div class="diya-row reveal">
+        <button class="diya-btn lit" type="button" aria-pressed="true" aria-label="Diya 1" style="--fd:0s"><span class="diya-glow"></span><span class="diya-art" data-diya></span><span class="ember-layer"></span></button>
+        <button class="diya-btn lit" type="button" aria-pressed="true" aria-label="Diya 2" style="--fd:-.4s"><span class="diya-glow"></span><span class="diya-art" data-diya></span><span class="ember-layer"></span></button>
+        <button class="diya-btn lit" type="button" aria-pressed="true" aria-label="Diya 3" style="--fd:-.9s"><span class="diya-glow"></span><span class="diya-art" data-diya></span><span class="ember-layer"></span></button>
+        <button class="diya-btn lit" type="button" aria-pressed="true" aria-label="Diya 4" style="--fd:-1.2s"><span class="diya-glow"></span><span class="diya-art" data-diya></span><span class="ember-layer"></span></button>
+        <button class="diya-btn lit" type="button" aria-pressed="true" aria-label="Diya 5" style="--fd:-.2s"><span class="diya-glow"></span><span class="diya-art" data-diya></span><span class="ember-layer"></span></button>
+      </div>
+      <p id="diyaCount" class="diya-count" aria-live="polite">All 5 diyas are glowing ✨</p>
+    </section>
+
+    <!-- ============ E + F. WISH GENERATOR & SHARING ============ -->
+    <section id="wishes" class="section container" aria-labelledby="wish-title">
+      <div class="glass-card wish-card reveal">
+        <h2 id="wish-title" class="section-title">Send a Little Diwali Magic 💌</h2>
+        <p class="section-sub">Type a friend's name and we'll wrap a warm wish just for them.</p>
+
+        <form id="wishForm" novalidate>
+          <label for="friendName">Your friend's name</label>
+          <div class="field-row">
+            <input id="friendName" name="friendName" type="text" maxlength="30" autocomplete="off"
+                   autocapitalize="words" enterkeyhint="go" placeholder="e.g. Aarav"
+                   aria-describedby="nameHelp nameError">
+            <button class="btn btn-glow" type="submit">Create My Wish</button>
+          </div>
+          <p id="nameHelp" class="help">Letters, spaces, dots, hyphens and apostrophes · up to 30 characters</p>
+          <p id="nameError" class="error" role="alert" hidden></p>
+        </form>
+
+        <div id="wishOutput" class="wish-output" hidden>
+          <div id="wishCard" class="wish-paper" tabindex="-1">
+            <span class="wish-diya" aria-hidden="true">🪔</span>
+            <p id="wishText" class="wish-text"></p>
+            <p class="wish-sign">— sent with love, light &amp; laughter ✨</p>
+          </div>
+          <div class="wish-actions">
+            <button id="shareBtn" class="btn btn-glow" type="button">Share This Wish</button>
+            <button id="copyBtn" class="btn btn-ghost" type="button">Copy Wish</button>
+            <button id="anotherBtn" class="btn btn-ghost" type="button">Another Wish ✨</button>
+          </div>
+        </div>
+        <p id="status" class="status" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p>Made with love, light &amp; a little bit of magic ✨</p>
+      <p class="footer-small">Wishing you and yours a very Happy Diwali 🪔</p>
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
